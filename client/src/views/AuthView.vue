@@ -70,26 +70,26 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useAuthStore } from "../stores/auth.js"
+import { useRouter } from 'vue-router';
 
-const isLogin = ref(true)
+const authStore = useAuthStore()
+const router = useRouter()
+
+const isLogin = ref(false)
 const form = ref({
   email: '',
   password: ''
 })
 
-const toggleForm = () => {
-  isLogin.value = !isLogin.value
+const toggleForm = () => { isLogin.value = !isLogin.value }
+const register = async () => {
+  await authStore.register({email:form.value.email,password: form.value.password},router);
+}
+const login = async () => {
+  await authStore.login({email:form.value.email,password: form.value.password},router);
 }
 
-const register = () => {
-  // Implement your registration logic here
-  console.log('Registering:', form.value)
-}
-
-const login = () => {
-  // Implement your login logic here
-  console.log('Logging in:', form.value)
-}
 </script>
 
 <style>

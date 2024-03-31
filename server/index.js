@@ -1,17 +1,89 @@
-const express = require('express');
-const app = express();
+const express = require('express')
+const mongoose = require('mongoose')
+const bcrypt = require('bcrypt');
 
-app.use(express.json());
+const jwt = require('jsonwebtoken')
+const app = express()
+const crypto = require('crypto')
+const { authenticate } = require("./middlewares/auth")
+const { UserSchema } = require("./models/UserSchema")
+const cors = require('cors');
 
-app.get('/api/tasks', (req, res) => {
-    // Replace this with your actual tasks data
-    const tasks = [
-        { id: 1, title: 'Task 1' },
-        { id: 2, title: 'Task 2' },
-        { id: 3, title: 'Task 3' }
-    ];
-    res.json(tasks);
-});
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+require('dotenv').config()
+
+app.use(express.json())
+app.use(cors({ origin: "*" }));
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_CONNECT_STRING, {})
+
+// User schema
+
+
+
+function generateRandomToken(length) {
+  return crypto.randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length)
+}
+
+// User model
+const User = mongoose.model('User', UserSchema)
+
+
+
+// Middleware to check if the user is authenticated
+
+
+// Registration route
+app.post('/register', async (req, res) => {
+  const { email, password } = req.body;
+  console.log("Registering user... ", email, password)
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ email, password: hashedPassword, });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1 hour' });
+    user.token = token
+    await user.save();
+    res.status(200)
+    res.cookie('token', token, { httpOnly: true, })
+    res.json({ message: 'Registration successful' });
+
+  } catch (error) {
+    console.log(error);
+  }
+})
+
+// Login route
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const passwordMatch = await user.comparePassword(password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Incorrect password' });
+    }
+
+    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+      expiresIn: '1 hour'
+    });
+    res.json({ token });
+  } catch (error) {
+    next(error);
+  }
+})
+
+// User profile route
+app.get('/profile', authenticate, (req, res) => {
+  res.send(req.user)
+})
+
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
