@@ -10,19 +10,21 @@ export const useAuthStore = defineStore('auth', () => {
   const router = useRouter();
 
   const user = ref({
-    isLogged : false,
+    isLogged: false,
     "username": "nihat",
     "role": 'admin',
     "password": "nebilimne"
   })
 
-  async function loginWithToken(){
-    const response = await server.post("register", {
-      email,
-      password
-    }, {
+  async function loginWithToken() {
+    const response = await server.get("login-with-token", {
       withCredentials: true
     })
+    if (response.status === 200) {
+      user.email = response.data.email
+      user.profileImage = response.data.profileImage
+      user.isLogged = true
+    }
   }
 
   async function login({ email, password }, router) {
@@ -56,5 +58,5 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = '';
   }
 
-  return { user, login, register, logout };
+  return { user, login, register, logout, loginWithToken };
 });

@@ -5,3 +5,7 @@ Content-Type: application/json
   "email" : "n-email@mail.aaru",
   "password" : "123"
 }
+
+
+###
+GET  localhost:3000/login-with-token HTTP/1.1

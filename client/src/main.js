@@ -8,6 +8,7 @@ import PrimeVue from 'primevue/config';
 import App from './App.vue'
 import router from './router'
 import axios from 'axios';
+import { useAuthStore } from './stores/auth';
 
 const app = createApp(App)
 
@@ -18,6 +19,9 @@ export const server = axios.create({
 
 
 app.use(createPinia())
+const auth = useAuthStore()
+auth.loginWithToken()
+
 app.use(router)
 app.use(PrimeVue)
 app.mount('#app')

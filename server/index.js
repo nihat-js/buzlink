@@ -13,7 +13,7 @@ const cors = require('cors');
 require('dotenv').config()
 
 app.use(express.json())
-app.use(cors({ origin: "*" }));
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_CONNECT_STRING, {})
@@ -21,10 +21,6 @@ mongoose.connect(process.env.MONGODB_CONNECT_STRING, {})
 // User schema
 
 
-
-function generateRandomToken(length) {
-  return crypto.randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length)
-}
 
 // User model
 const User = mongoose.model('User', UserSchema)
@@ -79,6 +75,22 @@ app.post('/login', async (req, res) => {
 })
 
 // User profile route
+
+
+app.get('/login-with-token', (req, res) => {
+  const token = req.cookies?.get('token')
+  if (!token) return res.status(402).json({ message: "Not authorized" })
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decodedToken) => {
+    if (err) {
+      return res.status(401).json({ message: "Not authorized" })
+    }
+    return res.status(200).json({
+      profileImage: decodedToken.profileImage,
+      email: decodedToken.email
+    })
+  })
+})
+
 app.get('/profile', authenticate, (req, res) => {
   res.send(req.user)
 })

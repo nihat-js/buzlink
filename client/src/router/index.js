@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import AuthView from '../views/AuthView.vue'
 import { useAuthStore } from '@/stores/auth'
+import WelcomeView from '@/views/WelcomeView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -11,8 +12,8 @@ const router = createRouter({
       beforeEnter: function (to, from) {
         console.log("Entering...")
         const auth = useAuthStore()
-        if (!auth.isLogged){
-          
+        if (!auth.isLogged) {
+          return '/welcome'
         }
         console.log("authenticating...", auth.user.username)
         // server.post("/check-token")
@@ -29,9 +30,14 @@ const router = createRouter({
     // component: () => import('../views/AboutView.vue')
     // },
     {
-      path: '/auth/',
+      path: '/auth',
       name: 'auth',
       component: AuthView
+    },
+    {
+      path: '/welcome',
+      name: 'welcome',
+      component: WelcomeView,
     }
   ]
 })
