@@ -8,10 +8,12 @@ const crypto = require('crypto')
 const { authenticate } = require("./middlewares/auth")
 const { UserSchema } = require("./models/UserSchema")
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 
 require('dotenv').config()
 
+app.use(cookieParser());
 app.use(express.json())
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 
@@ -77,11 +79,13 @@ app.post('/login', async (req, res) => {
 // User profile route
 
 
-app.get('/login-with-token', (req, res) => {
-  const token = req.cookies?.get('token')
+app.get('/login-with-token', async (req, res) => {
+  const token = req.cookies?.token
+  console.log(token)
   if (!token) return res.status(402).json({ message: "Not authorized" })
   jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decodedToken) => {
     if (err) {
+      console.log(decodedToken)
       return res.status(401).json({ message: "Not authorized" })
     }
     return res.status(200).json({
