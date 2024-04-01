@@ -31,6 +31,10 @@ const User = mongoose.model('User', UserSchema)
 
 // Middleware to check if the user is authenticated
 
+app.all('/test', (req, res) => {
+  res.send('teveinzeest')
+})
+
 
 // Registration route
 app.post('/register', async (req, res) => {
