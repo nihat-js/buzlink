@@ -103,7 +103,10 @@ app.get('/profile', authenticate, (req, res) => {
   res.send(req.user)
 })
 
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+// const PORT = process.env.PORT || 3000
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`)
+// })
+
+
+module.exports.handler = serverless(app);

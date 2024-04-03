@@ -1,16 +1,18 @@
 {
   "dependencies": {
+    "aws-serverless-express": "^3.4.0",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.2.4"
+    "mongoose": "^8.2.4",
+    "serverless-http": "^3.2.0"
   },
   "scripts": {
-    "install": "npm install",
-    "run" : "node index.js", 
-    "pm2" : "npx pm2 start index.js"
+    "build": "npm install",
+    "run": "node index.js",
+    "pm2": "npx pm2 start index.js"
   }
 }

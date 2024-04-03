@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import AuthView from '../views/AuthView.vue'
 import { useAuthStore } from '@/stores/auth'
 import WelcomeView from '@/views/WelcomeView.vue'
+import DashboardView from '@/views/DashboardView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -38,8 +39,17 @@ const router = createRouter({
       path: '/welcome',
       name: 'welcome',
       component: WelcomeView,
+    },
+    {
+      path : '/dashboard',
+      name : 'dashboard',
+      component : DashboardView
     }
   ]
+})
+
+router.beforeEach(function(from,to){
+    console.log({from,to})
 })
 
 export default router

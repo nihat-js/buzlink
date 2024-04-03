@@ -18,10 +18,12 @@ export const server = axios.create({
 })
 
 
+import VueApexCharts from 'vue3-apexcharts';
 app.use(createPinia())
-const auth = useAuthStore()
-auth.loginWithToken()
+// const auth = useAuthStore()
+// auth.loginWithToken()
 
+app.component("VueApexCharts", VueApexCharts);
 app.use(router)
 app.use(PrimeVue)
 app.mount('#app')
