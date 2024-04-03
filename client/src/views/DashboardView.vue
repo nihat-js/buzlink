@@ -1,6 +1,6 @@
 <template>
+  <Nav />
   <div class="min-h-screen bg-gray-100 p-8">
-
     <!-- Dashboard Header -->
     <div class="mb-4">
       <h1 class="text-2xl font-bold text-gray-700">URL Shortener Dashboard</h1>
@@ -115,6 +115,7 @@
 </template>
 
 <script setup>
+import Nav from '@/components/Nav.vue';
 import { ref, watch } from 'vue';
 
 const selectedURL = ref(null)
