@@ -1,112 +1,36 @@
-const express = require('express')
-const mongoose = require('mongoose')
-const bcrypt = require('bcrypt');
+const express = require("express")
+const cors = require("cors")
+const cookieParser = require("cookie-parser")
+const dotenv = require("dotenv")
+const connectDB = require("./db/db.js")
+const authRouter = require("./routes/auth.routes.js")
 
-const jwt = require('jsonwebtoken')
+dotenv.config({
+  path: "./.env",
+})
+
 const app = express()
-const crypto = require('crypto')
-const { authenticate } = require("./middlewares/auth")
-const { UserSchema } = require("./models/UserSchema")
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
 
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  })
+)
 
-require('dotenv').config()
-
-app.use(cookieParser());
 app.use(express.json())
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cookieParser())
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_CONNECT_STRING, {})
-
-// User schema
+app.get('/test', (req, res) => res.send('test'))
+app.use("/api/auth", authRouter)
 
 
-
-// User model
-const User = mongoose.model('User', UserSchema)
-
-
-
-// Middleware to check if the user is authenticated
-
-app.all('/test', (req, res) => {
-  res.send('teveinzeest')
-})
-
-
-// Registration route
-app.post('/register', async (req, res) => {
-  const { email, password } = req.body;
-  console.log("Registering user... ", email, password)
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashedPassword, });
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1 hour' });
-    user.token = token
-    await user.save();
-    res.status(200)
-    res.cookie('token', token, { httpOnly: true, })
-    res.json({ message: 'Registration successful' });
-
-  } catch (error) {
-    console.log(error);
-  }
-})
-
-// Login route
-app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    const passwordMatch = await user.comparePassword(password);
-    if (!passwordMatch) {
-      return res.status(401).json({ message: 'Incorrect password' });
-    }
-
-    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
-      expiresIn: '1 hour'
-    });
-    res.json({ token });
-  } catch (error) {
-    next(error);
-  }
-})
-
-// User profile route
-
-
-app.get('/login-with-token', async (req, res) => {
-  const token = req.cookies?.token
-  console.log(token)
-  if (!token) return res.status(402).json({ message: "Not authorized" })
-  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decodedToken) => {
-    if (err) {
-      console.log(decodedToken)
-      return res.status(401).json({ message: "Not authorized" })
-    }
-    return res.status(200).json({
-      profileImage: decodedToken.profileImage,
-      email: decodedToken.email
+connectDB()
+  .then(() => {
+    app.listen(process.env.PORT || 8000, () => {
+      console.log(`Server listening on port ${process.env.PORT}`)
     })
   })
-})
-
-app.get('/profile', authenticate, (req, res) => {
-  res.send(req.user)
-})
-
-// const PORT = process.env.PORT || 3000
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`)
-// })
-
-
-module.exports.handler = serverless(app);
+  .catch((error) => {
+    console.log("MongoDB connection failed", error)
+  })

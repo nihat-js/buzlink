@@ -12,16 +12,45 @@
             Solution</h1>
           <p class="mt-6 text-lg leading-8 text-gray-600">Shorten your URLs with ease and efficiency using BuzLink. Our
             platform offers advanced features to help you manage and track your shortened links.</p>
-          <div class="mt-10 flex items-center justify-center gap-x-6">
+          <!-- <div class="mt-10 flex items-center justify-center gap-x-6">
             <a href="#"
               class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Get
               Started</a><a href="#" class="text-sm font-semibold leading-6 text-gray-900">Learn More<span
                 aria-hidden="true">→</span></a>
+          </div> -->
+
+          <div class="flex items-center mt-5">
+            <div class="relative w-full">
+              <input v-model="originalUrl"
+                class="rounded-full border border-gray-300 bg-white px-4 py-2 w-full focus:outline-none focus:ring focus:border-blue-500"
+                placeholder="Enter your URL" />
+              <button @click="shortenUrl"
+                class="absolute right-0 top-0 h-full bg-blue-500 text-white px-4 rounded-full hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-200">
+                Shorten
+              </button>
+            </div>
           </div>
+
+          <div v-if="shortenedUrls.length > 0">
+            <h3 class="mt-8 text-lg font-semibold">Generated URLs:</h3>
+            <ul class="mt-4 space-y-2">
+              <li v-for="(url, index) in shortenedUrls" :key="index"
+                class="flex items-center justify-between bg-white shadow-md rounded-md px-4 py-2">
+                <div>{{ url }}</div>
+                <button @click="goToStats(url)"
+                  class="bg-blue-500 text-white py-1 px-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-200">Stats</button>
+              </li>
+            </ul>
+          </div>
+
+
         </div>
       </div>
     </div>
   </div>
+
+
+
 
 
 
@@ -101,4 +130,22 @@
 import Pricing from "../components/welcome/Pricing.vue"
 import Nav from "../components/welcome/Nav.vue"
 import FAQ from "../components/welcome/FAQ.vue"
+import { ref } from "vue";
+
+const originalUrl = ref("")
+const shortenedUrls = ref([])
+
+console.log("vue", import.meta.env.VUE_APP_NOT_SECRET_CODE)
+
+
+function shortenUrl() {
+  shortenedUrls.value.push("salam")
+  console.log(shortenedUrls.value)
+  // this.shortenedUrl = `http://example.com/${Math.random().toString(36).substring(7)}`;
+}
+function goToStats() {
+  const statsUrl = `/stats/${this.shortenedUrl}`;
+  window.location.href = statsUrl;
+}
+
 </script>

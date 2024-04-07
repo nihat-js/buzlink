@@ -4,36 +4,21 @@ import AuthView from '../views/AuthView.vue'
 import { useAuthStore } from '@/stores/auth'
 import WelcomeView from '@/views/WelcomeView.vue'
 import DashboardView from '@/views/DashboardView.vue'
+import SettingsView from '@/views/SettingsView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
       name: 'home',
-      beforeEnter: function (to, from) {
-        console.log("Entering...")
-        const auth = useAuthStore()
-        if (!auth.isLogged) {
-          return '/welcome'
-        }
-        console.log("authenticating...", auth.user.username)
-        // server.post("/check-token")
-        // if (document.cookie)
-      },
-      component: HomeView
+      component: HomeView,
+      meta: { mustLogin: true },
+
     },
-    // {
-    // path: '/about',
-    // name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (About.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    // component: () => import('../views/AboutView.vue')
-    // },
     {
       path: '/auth',
       name: 'auth',
-      component: AuthView
+      component: AuthView,
     },
     {
       path: '/welcome',
@@ -41,15 +26,25 @@ const router = createRouter({
       component: WelcomeView,
     },
     {
-      path : '/dashboard',
-      name : 'dashboard',
-      component : DashboardView
-    }
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
+      meta: { mustLogin: true },
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsView,
+      meta: { mustLogin: true },
+    },
   ]
 })
 
-router.beforeEach(function(from,to){
-    console.log({from,to})
+router.beforeEach(function (from, to) {
+  if (to.meta?.mustLogin) {
+    console.log('Must login')
+
+  }
 })
 
 export default router
