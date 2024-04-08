@@ -26,8 +26,7 @@
           </div>
           <div>
             <label for="password" class="sr-only">Password</label>
-            <input id="password" name="password-confirm" type="password" 
-              autocomplete="current-password" required
+            <input id="password" name="password-confirm" type="password" autocomplete="current-password" required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               placeholder="Confirm password" v-model="form.confirmPassword" v-if="!isLogin">
           </div>
@@ -76,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useAuthStore } from "../stores/auth.js"
 import { useRouter } from 'vue-router';
 
@@ -87,7 +86,7 @@ const isLogin = ref(false)
 const form = ref({
   email: '',
   password: '',
-  confirmPassword : '',
+  confirmPassword: '',
 })
 
 const toggleForm = () => { isLogin.value = !isLogin.value }
@@ -97,6 +96,18 @@ const register = async () => {
 const login = async () => {
   await authStore.login({ email: form.value.email, password: form.value.password }, router);
 }
+
+
+const auth = useAuthStore()
+console.log("auth is")
+watch(() => auth.user,
+  (newUser, oldUser) => {
+    console.log('User object changed:', newUser)
+
+  }
+)
+
+
 
 </script>
 

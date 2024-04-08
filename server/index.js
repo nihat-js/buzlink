@@ -15,6 +15,7 @@ app.use(
   cors({
     origin: process.env.CLIENT_URL,
     credentials: true,
+    exposedHeaders: "Authorization"
   })
 )
 
@@ -25,6 +26,8 @@ app.get('/test', (req, res) => res.send('test'))
 app.use("/api/auth", authRouter)
 
 
+const invalidTokens = []
+
 connectDB()
   .then(() => {
     app.listen(process.env.PORT || 8000, () => {
@@ -34,3 +37,8 @@ connectDB()
   .catch((error) => {
     console.log("MongoDB connection failed", error)
   })
+
+
+module.exports = {
+  invalidTokens
+}

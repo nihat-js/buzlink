@@ -3,28 +3,25 @@ import instance from '@/services/api';
 import axios from 'axios';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 
 export const useAuthStore = defineStore('auth', () => {
 
   const user = ref({
-    accessToken: null,
-    username: null,
-    profileImage: null,
+    // accessToken: null,
     email: null,
-    role: null,
+    // profileImage: null,
+    // role: null,
+    // username: null,
   })
-
   function isAuthenticated() {
-    user.isAuthenticated ? true : false
+    return user.email ? true : false
   }
 
-  function setUserAndAccessToken(data) {
+  function setUser(data) {
     user.email = data.email
     user.profileImage = data.profileImage
-    console.log('access token', data.accessToken)
-    instance.defaults.headers.common["Authorization"] = "Bearer " + data.accessToken
   }
 
   async function refreshToken() {
@@ -35,7 +32,7 @@ export const useAuthStore = defineStore('auth', () => {
         withCredentials: true
       })
     if (response.status === 200) {
-      setUserAndAccessToken(response.data.data)
+      setUser(response.data.data)
     }
   }
 
@@ -48,7 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
       withCredentials: true
     })
     if (response.status === 200) {
-      setUserAndAccessToken(response.data)
+      setUser(response.data)
       router.push("/")
     }
 
@@ -63,14 +60,14 @@ export const useAuthStore = defineStore('auth', () => {
       withCredentials: true
     })
     if (response.status === 201) {
-      setUserAndAccessToken(response.data.data)
+      setUser(response.data.data)
       router.push("/")
     }
   }
 
   function logout() {
-    setUserAndAccessToken({})
+    setUser({})
   }
 
-  return { user, login, register, logout, refreshToken };
+  return { user, login, register, logout, refreshToken, isAuthenticated };
 });

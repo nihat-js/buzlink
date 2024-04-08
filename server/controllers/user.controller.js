@@ -1,6 +1,7 @@
 const User = require("../models/user.model.js")
 const jwt = require("jsonwebtoken")
-
+const crypto = require("crypto")
+const { Session } = require("../models/session.model.js")
 const registerUser = async (req, res) => {
   const { email, password } = req.body
 
@@ -10,37 +11,29 @@ const registerUser = async (req, res) => {
 
   try {
     let user = new User({ email, password })
-    user.refresh_token = jwt.sign(
-      {
-        _id: user._id,
-        email: user.email,
-      },
-      process.env.REFRESH_TOKEN_SECRET,
-      {
-        expiresIn: "15m",
-      }
-    )
-``
     user = await user.save()
+    const refreshToken = crypto.randomBytes(32).toString("hex")
+    let session = new Session({ userId: user._id, token: refreshToken })
+    await session.save()
     const accessToken = jwt.sign(
       {
         _id: user._id,
       },
       process.env.ACCESS_TOKEN_SECRET,
       {
-        expiresIn: "15d",
+        expiresIn: "15m",
       }
     )
     const options = {
-      maxAge: 1000 * 60 * 150, // would expire after 15 minutes
+      maxAge: 1000 * 60 * 1440, // would expire after 15 minutes
       httpOnly: true, // The cookie only accessible by the web server
       // signed: true // Indicates if the cookie should be signed
     }
-    res.cookie("refresh_token", user.refresh_token, options)
+    res.cookie("refresh_token", refreshToken, options)
+    res.header('Authorization', 'Bearer ' + accessToken)
     return res.status(201).json({
       message: "User created successfully",
       data: {
-        accessToken,
         email: user.email,
       },
     })
@@ -54,22 +47,33 @@ const registerUser = async (req, res) => {
   }
 }
 
-const generateAccessAndRefreshTokens = async (userId) => {
-  // try {
-  //   const user = await User.findById(userId)
-  //   const accessToken = user.generateAccessToken()
-  //   const refreshToken = user.generateRefreshToken();
+const refreshToken = async (req, res) => {
+  const refreshToken = req.cookies?.refresh_token
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Not authorized to refresh token" })
+  }
+  try {
+    const user = await Session.findOne({ token: refreshToken, deletedAt: { $exists: false } },
+    ).populate({
+      path: 'userId',
+      model: "User",
+      select: "_id email"
+    })
+    if (!user) {
+      return res.clearCookie("refresh_token").status(401).json({ message: "Auth error" })
+    }
+    const data = {
+      _id: user._id,
+      email: user.userId.email
+    }
+    const newAccessToken = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15d", })
+    res.header("Authorization", "Bearer " + newAccessToken)
+    req.user = user
+    return res.status(200).json({ message: "OK", data })
 
-  //   user.refreshToken = refreshToken;
-
-  //   await user.save({ validateBeforeSave: false });
-
-  //   console.log(user.refreshToken);
-
-  //   return { accessToken, refreshToken };
-  // } catch (error) {
-  //   return res.status(500).json({ message: error.message });
-  // }
+  } catch (err) {
+    return res.status(500).send({ message: err.message })
+  }
 }
 
 const loginUser = async (req, res) => {
@@ -142,55 +146,7 @@ const logoutUser = async (req, res) => {
     .json({ user: {}, message: "Logged out successfully" });
 };
 
-const refreshToken = async (req, res) => {
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-  const incomingRefreshToken = req.cookies.refresh_token
-  if (!incomingRefreshToken) {
-    return res.status(401).json({ message: "Refresh token not found" });
-  }
 
-  try {
 
-    const decodedToken = jwt.verify(
-      incomingRefreshToken,
-      process.env.REFRESH_TOKEN_SECRET
-    );
-    const user = await User.findById(decodedToken?._id);
-    if (!user) {
-
-      return res.cookie("refresh_token", "", { httpOnly: true }).status(401).json({ message: "Refresh token is expired 1" });
-    }
-    if (user?.refresh_token !== incomingRefreshToken) {
-      return res.status(401).json({ message: "Refresh token expired 2" });
-
-    }
-
-    const accessToken = jwt.sign(
-      {
-        _id: user._id,
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      {
-        expiresIn: "15d",
-      }
-    )
-
-    return res
-      .status(200)
-      // .cookie("accessToken", accessToken, options)
-      .json({
-        message: "Access token refreshed", data: {
-          email: user.email,
-          profileImage: user.profileImage,
-          accessToken: accessToken,
-        }
-      });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
 
 module.exports = { registerUser, loginUser, logoutUser, refreshToken }

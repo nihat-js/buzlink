@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+// import HomeView from '../views/HomeView.vue'
 import AuthView from '../views/AuthView.vue'
 import { useAuthStore } from '@/stores/auth'
 import WelcomeView from '@/views/WelcomeView.vue'
@@ -9,19 +9,12 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-      meta: { mustLogin: true },
-
-    },
-    {
       path: '/auth',
       name: 'auth',
       component: AuthView,
     },
     {
-      path: '/welcome',
+      path: '/',
       name: 'welcome',
       component: WelcomeView,
     },
@@ -40,11 +33,16 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach(function (from, to) {
-  if (to.meta?.mustLogin) {
-    console.log('Must login')
+router.beforeEach(function (to, from, next) {
+  const auth = useAuthStore();
 
+  if (to.meta?.mustLogin && !auth.isAuthenticated()) {
+    return next("auth")
+    // console.log('Must login')
   }
+  next()
+
+
 })
 
 export default router

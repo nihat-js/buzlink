@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "axios"
 
 const instance = axios.create({
   withCredentials: true,
@@ -6,5 +6,21 @@ const instance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-});
-export default instance;
+})
+
+instance.interceptors.response.use((response) => {
+  // Check if the response includes an Authorization header
+  const authHeader = response.headers['authorization'];
+  if (authHeader) {
+    instance.defaults.headers.common['authorization'] = authHeader;
+  }
+
+
+  return response;
+}, (error) => {
+  // Handle response errors
+  return Promise.reject(error);
+}
+)
+
+export default instance
