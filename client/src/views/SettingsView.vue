@@ -92,7 +92,7 @@
 </template>
 
 <script>
-import Nav from '@/components/Nav.vue';
+import Nav from '@/components/user/Nav.vue';
 
 export default {
   data() {

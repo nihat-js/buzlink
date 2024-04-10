@@ -13,8 +13,7 @@ instance.interceptors.response.use((response) => {
   const authHeader = response.headers['authorization'];
   if (authHeader) {
     instance.defaults.headers.common['authorization'] = authHeader;
-  }
-
+}
 
   return response;
 }, (error) => {
